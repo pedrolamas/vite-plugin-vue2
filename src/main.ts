@@ -2,7 +2,7 @@ import path from 'node:path'
 import type { SFCBlock, SFCDescriptor } from 'vue/compiler-sfc'
 import type { PluginContext, TransformPluginContext } from 'rollup'
 import type { RawSourceMap } from 'source-map'
-import { transformWithEsbuild } from 'vite'
+import * as viteExports from 'vite'
 import {
   createDescriptor,
   getPrevDescriptor,
@@ -15,6 +15,43 @@ import { createRollupError } from './utils/error'
 import type { ResolvedOptions } from '.'
 import { NORMALIZER_ID } from './utils/componentNormalizer'
 import { HMR_RUNTIME_ID } from './utils/hmrRuntime'
+
+// Typed references for the transformer functions available in different Vite versions
+const _transformWithOxc = (viteExports as any).transformWithOxc as
+  | ((
+      code: string,
+      filename: string,
+      options: { lang: 'ts'; sourcemap: boolean },
+      inMap?: RawSourceMap
+    ) => Promise<{ code: string; map: RawSourceMap | undefined }>)
+  | undefined
+const _transformWithEsbuild = (viteExports as any).transformWithEsbuild as (
+  code: string,
+  filename: string,
+  options: { loader: 'ts'; target: string; sourcemap: boolean },
+  inMap?: RawSourceMap
+) => Promise<{ code: string; map: RawSourceMap | undefined }>
+
+/**
+ * Transform TypeScript code using transformWithOxc (Vite 8+) when available,
+ * falling back to transformWithEsbuild for older Vite versions.
+ */
+async function transformTS(
+  code: string,
+  filename: string,
+  sourcemap: boolean,
+  inMap: RawSourceMap | undefined
+): Promise<{ code: string; map: RawSourceMap | undefined }> {
+  if (_transformWithOxc) {
+    return _transformWithOxc(code, filename, { lang: 'ts', sourcemap }, inMap)
+  }
+  return _transformWithEsbuild(
+    code,
+    filename,
+    { loader: 'ts', target: 'esnext', sourcemap },
+    inMap
+  )
+}
 
 export async function transformMain(
   code: string,
@@ -146,18 +183,14 @@ var __component__ = /*#__PURE__*/__normalizer(
       descriptor.scriptSetup?.lang === 'ts') &&
     !descriptor.script?.src // only normal script can have src
   ) {
-    const { code, map } = await transformWithEsbuild(
+    const { code, map } = await transformTS(
       resolvedCode,
       filename,
-      {
-        loader: 'ts',
-        target: 'esnext',
-        sourcemap: options.sourceMap
-      },
+      options.sourceMap,
       resolvedMap
     )
     resolvedCode = code
-    resolvedMap = resolvedMap ? (map as any) : resolvedMap
+    resolvedMap = resolvedMap ? map : resolvedMap
   }
 
   return {
