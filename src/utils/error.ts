@@ -1,4 +1,5 @@
-import type { RollupError } from 'rollup'
+import type { Rolldown } from 'vite'
+type RollupError = Rolldown.RollupError
 import { WarningMessage } from 'vue/compiler-sfc'
 
 export function createRollupError(

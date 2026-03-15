@@ -1,6 +1,8 @@
 import path from 'node:path'
 import type { SFCBlock, SFCDescriptor } from 'vue/compiler-sfc'
-import type { PluginContext, TransformPluginContext } from 'rollup'
+import type { Rolldown } from 'vite'
+type PluginContext = Rolldown.PluginContext
+type TransformPluginContext = Rolldown.TransformPluginContext
 import type { RawSourceMap } from 'source-map'
 import { transformWithOxc } from 'vite'
 import {
@@ -156,7 +158,7 @@ var __component__ = /*#__PURE__*/__normalizer(
       resolvedMap
     )
     resolvedCode = code
-    resolvedMap = resolvedMap ? map : resolvedMap
+    resolvedMap = resolvedMap ? (map as unknown as RawSourceMap) : resolvedMap
   }
 
   return {

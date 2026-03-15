@@ -1,7 +1,9 @@
 // @ts-ignore
 import hash from 'hash-sum'
 import type { SFCDescriptor, SFCTemplateCompileOptions } from 'vue/compiler-sfc'
-import type { PluginContext, TransformPluginContext } from 'rollup'
+import type { Rolldown } from 'vite'
+type PluginContext = Rolldown.PluginContext
+type TransformPluginContext = Rolldown.TransformPluginContext
 import { getResolvedScript } from './script'
 import { createRollupError } from './utils/error'
 import type { ResolvedOptions } from '.'
