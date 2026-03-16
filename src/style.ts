@@ -1,8 +1,10 @@
 import type { SFCDescriptor } from 'vue/compiler-sfc'
-import type { ExistingRawSourceMap, TransformPluginContext } from 'rollup'
-import type { RawSourceMap } from 'source-map'
 import { formatPostcssSourceMap } from 'vite'
+import type { Rolldown } from 'vite'
 import type { ResolvedOptions } from '.'
+
+type ExistingRawSourceMap = Rolldown.ExistingRawSourceMap
+type TransformPluginContext = Rolldown.TransformPluginContext
 
 export async function transformStyle(
   code: string,
@@ -53,7 +55,7 @@ export async function transformStyle(
     ? await formatPostcssSourceMap(
         // version property of result.map is declared as string
         // but actually it is a number
-        result.map as Omit<RawSourceMap, 'version'> as ExistingRawSourceMap,
+        result.map as unknown as ExistingRawSourceMap,
         filename
       )
     : ({ mappings: '' } as any)

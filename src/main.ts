@@ -1,8 +1,8 @@
 import path from 'node:path'
 import type { SFCBlock, SFCDescriptor } from 'vue/compiler-sfc'
-import type { PluginContext, TransformPluginContext } from 'rollup'
+import { transformWithOxc } from 'vite'
+import type { Rolldown } from 'vite'
 import type { RawSourceMap } from 'source-map'
-import { transformWithEsbuild } from 'vite'
 import {
   createDescriptor,
   getPrevDescriptor,
@@ -15,6 +15,9 @@ import { createRollupError } from './utils/error'
 import type { ResolvedOptions } from '.'
 import { NORMALIZER_ID } from './utils/componentNormalizer'
 import { HMR_RUNTIME_ID } from './utils/hmrRuntime'
+
+type PluginContext = Rolldown.PluginContext
+type TransformPluginContext = Rolldown.TransformPluginContext
 
 export async function transformMain(
   code: string,
@@ -146,18 +149,17 @@ var __component__ = /*#__PURE__*/__normalizer(
       descriptor.scriptSetup?.lang === 'ts') &&
     !descriptor.script?.src // only normal script can have src
   ) {
-    const { code, map } = await transformWithEsbuild(
+    const { code, map } = await transformWithOxc(
       resolvedCode,
       filename,
       {
-        loader: 'ts',
-        target: 'esnext',
+        lang: 'ts',
         sourcemap: options.sourceMap
       },
       resolvedMap
     )
     resolvedCode = code
-    resolvedMap = resolvedMap ? (map as any) : resolvedMap
+    resolvedMap = resolvedMap ? (map as unknown as RawSourceMap) : resolvedMap
   }
 
   return {
