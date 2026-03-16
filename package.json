@@ -1,5 +1,5 @@
 {
-  "name": "@vitejs/plugin-vue2",
+  "name": "@pedrolamas/plugin-vue2",
   "version": "2.3.4",
   "license": "MIT",
   "author": "Evan You",
@@ -29,13 +29,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vitejs/vite-plugin-vue2.git",
+    "url": "git+https://github.com/pedrolamas/vite-plugin-vue2.git",
     "directory": "packages/plugin-vue"
   },
   "bugs": {
-    "url": "https://github.com/vitejs/vite-plugin-vue2/issues"
+    "url": "https://github.com/pedrolamas/vite-plugin-vue2/issues"
   },
-  "homepage": "https://github.com/vitejs/vite-plugin-vue2/#readme",
+  "homepage": "https://github.com/pedrolamas/vite-plugin-vue2/#readme",
   "peerDependencies": {
     "vite": "^8.0.0",
     "vue": "^2.7.0-0"

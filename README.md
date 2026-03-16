@@ -1,15 +1,15 @@
-# @vitejs/plugin-vue2 [![npm](https://img.shields.io/npm/v/@vitejs/plugin-vue2.svg)](https://npmjs.com/package/@vitejs/plugin-vue2)
+# @pedrolamas/plugin-vue2 [![npm](https://img.shields.io/npm/v/@pedrolamas/plugin-vue2.svg)](https://npmjs.com/package/@pedrolamas/plugin-vue2)
 
 > [!CAUTION]
 > Vue 2 has reached EOL, and this project is no longer actively maintained.
 
 ---
 
-> Note: this plugin only works with Vue@^2.7.0.
+> Note: this plugin requires Vite 8 (`vite >= 8.0.0`) and only works with Vue@^2.7.0.
 
 ```js
 // vite.config.js
-import vue from '@vitejs/plugin-vue2'
+import vue from '@pedrolamas/plugin-vue2'
 
 export default {
   plugins: [vue()]
@@ -44,7 +44,7 @@ export interface Options {
 
 ## Asset URL handling
 
-When `@vitejs/plugin-vue2` compiles the `<template>` blocks in SFCs, it also converts any encountered asset URLs into ESM imports.
+When `@pedrolamas/plugin-vue2` compiles the `<template>` blocks in SFCs, it also converts any encountered asset URLs into ESM imports.
 
 For example, the following template snippet:
 
@@ -81,7 +81,7 @@ Note that only attribute values that are static strings are transformed. Otherwi
 ## Example for passing options to `vue/compiler-sfc`:
 
 ```ts
-import vue from '@vitejs/plugin-vue2'
+import vue from '@pedrolamas/plugin-vue2'
 
 export default {
   plugins: [
@@ -102,7 +102,7 @@ export default {
 ## Example for transforming custom blocks
 
 ```ts
-import vue from '@vitejs/plugin-vue2'
+import vue from '@pedrolamas/plugin-vue2'
 
 const vueI18nPlugin = {
   name: 'vue-i18n',
