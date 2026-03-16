@@ -1,10 +1,8 @@
 import path from 'node:path'
 import type { SFCBlock, SFCDescriptor } from 'vue/compiler-sfc'
-import type { Rolldown } from 'vite'
-type PluginContext = Rolldown.PluginContext
-type TransformPluginContext = Rolldown.TransformPluginContext
-import type { RawSourceMap } from 'source-map'
 import { transformWithOxc } from 'vite'
+import type { Rolldown } from 'vite'
+import type { RawSourceMap } from 'source-map'
 import {
   createDescriptor,
   getPrevDescriptor,
@@ -17,6 +15,9 @@ import { createRollupError } from './utils/error'
 import type { ResolvedOptions } from '.'
 import { NORMALIZER_ID } from './utils/componentNormalizer'
 import { HMR_RUNTIME_ID } from './utils/hmrRuntime'
+
+type PluginContext = Rolldown.PluginContext
+type TransformPluginContext = Rolldown.TransformPluginContext
 
 export async function transformMain(
   code: string,

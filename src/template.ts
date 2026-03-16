@@ -2,14 +2,15 @@
 import hash from 'hash-sum'
 import type { SFCDescriptor, SFCTemplateCompileOptions } from 'vue/compiler-sfc'
 import type { Rolldown } from 'vite'
-type PluginContext = Rolldown.PluginContext
-type TransformPluginContext = Rolldown.TransformPluginContext
 import { getResolvedScript } from './script'
 import { createRollupError } from './utils/error'
 import type { ResolvedOptions } from '.'
 import path from 'node:path'
 import slash from 'slash'
 import { HMR_RUNTIME_ID } from './utils/hmrRuntime'
+
+type PluginContext = Rolldown.PluginContext
+type TransformPluginContext = Rolldown.TransformPluginContext
 
 export async function transformTemplateAsModule(
   code: string,

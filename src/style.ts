@@ -1,9 +1,10 @@
 import type { SFCDescriptor } from 'vue/compiler-sfc'
+import { formatPostcssSourceMap } from 'vite'
 import type { Rolldown } from 'vite'
+import type { ResolvedOptions } from '.'
+
 type ExistingRawSourceMap = Rolldown.ExistingRawSourceMap
 type TransformPluginContext = Rolldown.TransformPluginContext
-import { formatPostcssSourceMap } from 'vite'
-import type { ResolvedOptions } from '.'
 
 export async function transformStyle(
   code: string,
