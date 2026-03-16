@@ -149,6 +149,9 @@ var __component__ = /*#__PURE__*/__normalizer(
       descriptor.scriptSetup?.lang === 'ts') &&
     !descriptor.script?.src // only normal script can have src
   ) {
+    const inputMap = resolvedMap
+      ? { ...resolvedMap, file: resolvedMap.file ?? filename }
+      : undefined
     const { code, map } = await transformWithOxc(
       resolvedCode,
       filename,
@@ -156,7 +159,7 @@ var __component__ = /*#__PURE__*/__normalizer(
         lang: 'ts',
         sourcemap: options.sourceMap
       },
-      resolvedMap
+      inputMap
     )
     resolvedCode = code
     resolvedMap = resolvedMap ? (map as unknown as RawSourceMap) : resolvedMap
@@ -362,7 +365,8 @@ async function genCustomBlockCode(
       await linkSrcToDescriptor(block.src, descriptor, pluginContext, false)
     }
     const src = block.src || descriptor.filename
-    const attrsQuery = attrsToQuery(block.attrs, block.type)
+    const langFallback = (block.src && path.extname(src).slice(1)) || block.type
+    const attrsQuery = attrsToQuery(block.attrs, langFallback)
     const srcQuery = block.src ? `&src=true` : ``
     const query = `?vue&type=${block.type}&index=${index}${srcQuery}${attrsQuery}`
     const request = JSON.stringify(src + query)
