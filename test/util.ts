@@ -1,13 +1,13 @@
 import path from 'path'
 import fs from 'fs-extra'
-import execa from 'execa'
+import { execa } from 'execa'
 import { expect } from 'vitest'
 import type { ElementHandle } from 'puppeteer'
-import puppeteer from 'puppeteer'
+import puppeteer, { type Browser, type Page } from 'puppeteer'
 
-let devServer: any
-let browser: puppeteer.Browser
-let page: puppeteer.Page
+let devServer: ReturnType<typeof execa>
+let browser: Browser
+let page: Page
 let binPath: string
 const fixtureDir = path.join(__dirname, '../playground')
 const tempDir = path.join(__dirname, '../temp')
@@ -42,21 +42,25 @@ export async function startServer(isBuild: boolean) {
   devServer = execa(binPath, [], {
     cwd: isBuild ? path.join(tempDir, '/dist') : tempDir
   })
+  // Suppress the expected rejection when we later kill the server (execa v9)
+  devServer.catch(() => {})
+
+  // Attach listener synchronously before any await so execa's internal
+  // stream reader doesn't drain the buffer first (execa v9 behavior).
+  await new Promise<void>(resolve => {
+    devServer.stdout!.on('data', (data: Buffer) => {
+      if (data.toString().match('ready in')) {
+        console.log('dev server running.')
+        resolve()
+      }
+    })
+  })
 
   browser = await puppeteer.launch({
     args: ['--no-sandbox', '--disable-setuid-sandbox']
     // Enable if puppeteer can't detect chrome's path on MacOS
     // executablePath:
     // '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-  })
-
-  await new Promise(resolve => {
-    devServer.stdout.on('data', (data: Buffer) => {
-      if (data.toString().match('ready in')) {
-        console.log('dev server running.')
-        resolve('')
-      }
-    })
   })
 
   console.log('launching browser')
@@ -68,9 +72,7 @@ export async function startServer(isBuild: boolean) {
 export async function killServer() {
   if (browser) await browser.close()
   if (devServer) {
-    devServer.kill('SIGTERM', {
-      forceKillAfterTimeout: 2000
-    })
+    devServer.kill('SIGTERM')
   }
 }
 
