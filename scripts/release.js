@@ -5,7 +5,7 @@ const colors = require('picocolors')
 const semver = require('semver')
 const currentVersion = require('../package.json').version
 const { prompt } = require('enquirer')
-const execa = require('execa')
+const { execa } = require('execa')
 
 const preId =
   args.preid ||
