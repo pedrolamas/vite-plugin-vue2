@@ -2,8 +2,8 @@ import path from 'path'
 import fs from 'fs-extra'
 import { execa } from 'execa'
 import { expect } from 'vitest'
-import type { ElementHandle } from 'puppeteer'
-import puppeteer, { type Browser, type Page } from 'puppeteer'
+import type { ElementHandle, Browser, Page } from 'puppeteer'
+import puppeteer from 'puppeteer'
 
 let devServer: ReturnType<typeof execa>
 let browser: Browser
