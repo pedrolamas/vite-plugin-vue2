@@ -39,7 +39,7 @@ export async function postTest() {
 
 export async function startServer(isBuild: boolean) {
   // start dev server
-  devServer = execa(binPath, {
+  devServer = execa(binPath, [], {
     cwd: isBuild ? path.join(tempDir, '/dist') : tempDir
   })
 
