@@ -160,8 +160,7 @@ async function publishPackage(version, runIfNotDry) {
         'public'
       ],
       {
-        cwd: pkgRoot,
-        stdio: 'pipe'
+        cwd: pkgRoot
       }
     )
     console.log(

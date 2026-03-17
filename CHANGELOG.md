@@ -1,3 +1,12 @@
+# [2.4.0](https://github.com/pedrolamas/vite-plugin-vue2/compare/v2.3.4...v2.4.0) (2026-03-17)
+
+
+### Features
+
+* Vite 8 support ([#1](https://github.com/pedrolamas/vite-plugin-vue2/issues/1)) ([f87c229](https://github.com/pedrolamas/vite-plugin-vue2/commit/f87c2290a6dc7137aaab2d34166e3b2fe015a664))
+
+
+
 ## [2.3.3](https://github.com/vitejs/vite-plugin-vue2/compare/v2.3.2...v2.3.3) (2024-11-26)
 
 
