@@ -1,6 +1,7 @@
 {
   "name": "@pedrolamas/plugin-vue2",
   "version": "2.4.0",
+  "description": "Vite 8 plugin for Vue 2.7 single-file components support",
   "license": "MIT",
   "author": "Pedro Lamas",
   "packageManager": "pnpm@10.24.0",
