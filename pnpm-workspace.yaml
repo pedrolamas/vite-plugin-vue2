@@ -1,2 +1,8 @@
 packages:
   - playground
+
+onlyBuiltDependencies:
+  - puppeteer
+
+overrides:
+  vue: $vue
