@@ -24,7 +24,7 @@ jobs:
       - run: pnpm install
 
       - name: Install puppeteer browsers
-        run: pnpm dlx puppeteer browsers install
+        run: pnpm exec puppeteer browsers install chrome
 
       - name: Run tests
         run: pnpm test
