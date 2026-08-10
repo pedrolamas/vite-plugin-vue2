@@ -20,4 +20,4 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           body: |
-            Please refer to [CHANGELOG.md](https://github.com/vitejs/vite-plugin-vue2/blob/main/CHANGELOG.md) for details.
+            Please refer to [CHANGELOG.md](https://github.com/pedrolamas/vite-plugin-vue2/blob/main/CHANGELOG.md) for details.
