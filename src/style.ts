@@ -62,7 +62,10 @@ export async function transformStyle(
 
   return {
     code: result.code,
-    map: map
+    map: map,
+    meta: block.scoped
+      ? { vite: { cssScopeTo: [descriptor.filename, 'default'] as const } }
+      : undefined
   }
 }
 

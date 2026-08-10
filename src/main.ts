@@ -169,11 +169,6 @@ var __component__ = /*#__PURE__*/__normalizer(
     code: resolvedCode,
     map: resolvedMap || {
       mappings: ''
-    },
-    meta: {
-      vite: {
-        lang: descriptor.script?.lang || descriptor.scriptSetup?.lang || 'js'
-      }
     }
   }
 }
