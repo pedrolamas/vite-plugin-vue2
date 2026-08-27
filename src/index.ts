@@ -102,7 +102,14 @@ export default function vuePlugin(rawOptions: Options = {}): Plugin {
       return handleHotUpdate(ctx, options)
     },
 
-    config() {
+    config(config) {
+      const alias = config.resolve?.alias
+      const hasVueAlias = Array.isArray(alias)
+        ? alias.some(({ find }) => find === 'vue')
+        : !!alias && 'vue' in alias
+      if (hasVueAlias) {
+        return
+      }
       return {
         resolve: {
           alias: [{ find: 'vue', replacement: 'vue/dist/vue.runtime.esm.js' }]
@@ -163,7 +170,7 @@ export default function vuePlugin(rawOptions: Options = {}): Plugin {
           const descriptor = getDescriptor(filename, options)!
           let block: SFCBlock | null | undefined
           if (query.type === 'script') {
-            // handle <scrip> + <script setup> merge via compileScript()
+            // handle <script> + <script setup> merge via compileScript()
             block = getResolvedScript(descriptor, ssr)
           } else if (query.type === 'template') {
             block = descriptor.template!
