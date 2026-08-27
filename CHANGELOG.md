@@ -1,3 +1,7 @@
+## [2.4.2-beta.0](https://github.com/pedrolamas/vite-plugin-vue2/compare/v2.4.1...v2.4.2-beta.0) (2026-08-27)
+
+
+
 ## [2.4.1](https://github.com/pedrolamas/vite-plugin-vue2/compare/v2.4.0...v2.4.1) (2026-06-22)
 
 
