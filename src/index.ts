@@ -1,6 +1,7 @@
 import fs from 'node:fs'
-import { createFilter } from 'vite'
+import { createFilter, mergeAlias } from 'vite'
 import type { Plugin, ViteDevServer } from 'vite'
+import { exactRegex, makeIdFiltersToMatchWithQuery } from '@rolldown/pluginutils'
 import type {
   SFCBlock,
   SFCScriptCompileOptions,
@@ -57,6 +58,10 @@ export interface ResolvedOptions extends Options {
   devToolsEnabled?: boolean
 }
 
+function toArray<T>(value: T | T[] | undefined): T[] {
+  return value == null ? [] : Array.isArray(value) ? value : [value]
+}
+
 export default function vuePlugin(rawOptions: Options = {}): Plugin {
   const {
     include = /\.vue$/,
@@ -66,6 +71,13 @@ export default function vuePlugin(rawOptions: Options = {}): Plugin {
   } = rawOptions
 
   const filter = createFilter(include, exclude)
+
+  const vueQueryFilter = /[?&]vue\b/
+  const idFilter = [exactRegex(NORMALIZER_ID), exactRegex(HMR_RUNTIME_ID), vueQueryFilter]
+  const transformIdFilter = {
+    include: [...makeIdFiltersToMatchWithQuery(toArray(include)), vueQueryFilter],
+    exclude: exclude ? makeIdFiltersToMatchWithQuery(toArray(exclude)) : undefined
+  }
 
   let options: ResolvedOptions = {
     isProduction: process.env.NODE_ENV === 'production',
@@ -91,6 +103,17 @@ export default function vuePlugin(rawOptions: Options = {}): Plugin {
       return handleHotUpdate(ctx, options)
     },
 
+    config(config) {
+      return {
+        resolve: {
+          alias: mergeAlias(
+            [{ find: 'vue', replacement: 'vue/dist/vue.runtime.esm.js' }],
+            config.resolve?.alias
+          )
+        }
+      }
+    },
+
     configResolved(config) {
       options = {
         ...options,
@@ -99,12 +122,6 @@ export default function vuePlugin(rawOptions: Options = {}): Plugin {
         sourceMap: config.command === 'build' ? !!config.build.sourcemap : true,
         cssDevSourcemap: config.css?.devSourcemap ?? false,
         devToolsEnabled: !config.isProduction
-      }
-      if (!config.resolve.alias.some(({ find }) => find === 'vue')) {
-        config.resolve.alias.push({
-          find: 'vue',
-          replacement: 'vue/dist/vue.runtime.esm.js'
-        })
       }
     },
 
@@ -116,104 +133,113 @@ export default function vuePlugin(rawOptions: Options = {}): Plugin {
       options.compiler = options.compiler || resolveCompiler(options.root)
     },
 
-    async resolveId(id) {
-      // component export helper
-      if (id === NORMALIZER_ID || id === HMR_RUNTIME_ID) {
-        return id
-      }
-      // serve sub-part requests (*?vue) as virtual modules
-      if (parseVueRequest(id).query.vue) {
-        return id
+    resolveId: {
+      filter: { id: idFilter },
+      async handler(id) {
+        // component export helper
+        if (id === NORMALIZER_ID || id === HMR_RUNTIME_ID) {
+          return id
+        }
+        // serve sub-part requests (*?vue) as virtual modules
+        if (parseVueRequest(id).query.vue) {
+          return id
+        }
       }
     },
 
-    load(id, opt) {
-      const ssr = opt?.ssr === true
-      if (id === NORMALIZER_ID) {
-        return normalizerCode
-      }
-      if (id === HMR_RUNTIME_ID) {
-        return hmrRuntimeCode
-      }
+    load: {
+      filter: { id: idFilter },
+      handler(id, opt) {
+        const ssr = opt?.ssr === true
+        if (id === NORMALIZER_ID) {
+          return normalizerCode
+        }
+        if (id === HMR_RUNTIME_ID) {
+          return hmrRuntimeCode
+        }
 
-      const { filename, query } = parseVueRequest(id)
-      // select corresponding block for sub-part virtual modules
-      if (query.vue) {
-        if (query.src) {
-          return fs.readFileSync(filename, 'utf-8')
-        }
-        const descriptor = getDescriptor(filename, options)!
-        let block: SFCBlock | null | undefined
-        if (query.type === 'script') {
-          // handle <scrip> + <script setup> merge via compileScript()
-          block = getResolvedScript(descriptor, ssr)
-        } else if (query.type === 'template') {
-          block = descriptor.template!
-        } else if (query.type === 'style') {
-          block = descriptor.styles[query.index!]
-        } else if (query.index != null) {
-          block = descriptor.customBlocks[query.index]
-        }
-        if (block) {
-          return {
-            code: block.content,
-            map: block.map as any
+        const { filename, query } = parseVueRequest(id)
+        // select corresponding block for sub-part virtual modules
+        if (query.vue) {
+          if (query.src) {
+            return fs.readFileSync(filename, 'utf-8')
           }
-        }
-      }
-    },
-
-    async transform(code, id, opt) {
-      const ssr = opt?.ssr === true
-      const { filename, query } = parseVueRequest(id)
-      if (query.raw) {
-        return
-      }
-      if (!filter(filename) && !query.vue) {
-        // if (
-        //   !query.vue &&
-        //   refTransformFilter(filename) &&
-        //   options.compiler.shouldTransformRef(code)
-        // ) {
-        //   return options.compiler.transformRef(code, {
-        //     filename,
-        //     sourceMap: true
-        //   })
-        // }
-        return
-      }
-
-      if (!query.vue) {
-        // main request
-        return transformMain(code, filename, options, this, ssr)
-      } else {
-        // sub block request
-        const descriptor = query.src
-          ? getSrcDescriptor(filename, query)!
-          : getDescriptor(filename, options)!
-
-        if (query.type === 'template') {
-          return {
-            code: await transformTemplateAsModule(
-              code,
-              descriptor,
-              options,
-              this,
-              ssr
-            ),
-            map: {
-              mappings: ''
+          const descriptor = getDescriptor(filename, options)!
+          let block: SFCBlock | null | undefined
+          if (query.type === 'script') {
+            // handle <script> + <script setup> merge via compileScript()
+            block = getResolvedScript(descriptor, ssr)
+          } else if (query.type === 'template') {
+            block = descriptor.template!
+          } else if (query.type === 'style') {
+            block = descriptor.styles[query.index!]
+          } else if (query.index != null) {
+            block = descriptor.customBlocks[query.index]
+          }
+          if (block) {
+            return {
+              code: block.content,
+              map: block.map as any
             }
           }
-        } else if (query.type === 'style') {
-          return transformStyle(
-            code,
-            descriptor,
-            Number(query.index),
-            options,
-            this,
-            filename
-          )
+        }
+      }
+    },
+
+    transform: {
+      filter: { id: transformIdFilter },
+      async handler(code, id, opt) {
+        const ssr = opt?.ssr === true
+        const { filename, query } = parseVueRequest(id)
+        if (query.raw) {
+          return
+        }
+        if (!filter(filename) && !query.vue) {
+          // if (
+          //   !query.vue &&
+          //   refTransformFilter(filename) &&
+          //   options.compiler.shouldTransformRef(code)
+          // ) {
+          //   return options.compiler.transformRef(code, {
+          //     filename,
+          //     sourceMap: true
+          //   })
+          // }
+          return
+        }
+
+        if (!query.vue) {
+          // main request
+          return transformMain(code, filename, options, this, ssr)
+        } else {
+          // sub block request
+          const descriptor = query.src
+            ? getSrcDescriptor(filename, query)!
+            : getDescriptor(filename, options)!
+
+          if (query.type === 'template') {
+            return {
+              code: await transformTemplateAsModule(
+                code,
+                descriptor,
+                options,
+                this,
+                ssr
+              ),
+              map: {
+                mappings: ''
+              }
+            }
+          } else if (query.type === 'style') {
+            return transformStyle(
+              code,
+              descriptor,
+              Number(query.index),
+              options,
+              this,
+              filename
+            )
+          }
         }
       }
     }

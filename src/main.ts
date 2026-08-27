@@ -149,9 +149,9 @@ var __component__ = /*#__PURE__*/__normalizer(
       descriptor.scriptSetup?.lang === 'ts') &&
     !descriptor.script?.src // only normal script can have src
   ) {
-    resolvedMap = resolvedMap
-      ? { ...resolvedMap, file: resolvedMap.file ?? filename }
-      : undefined
+    if (resolvedMap) {
+      resolvedMap = { ...resolvedMap, file: resolvedMap.file ?? filename }
+    }
     const { code, map } = await transformWithOxc(
       resolvedCode,
       filename,
@@ -169,11 +169,6 @@ var __component__ = /*#__PURE__*/__normalizer(
     code: resolvedCode,
     map: resolvedMap || {
       mappings: ''
-    },
-    meta: {
-      vite: {
-        lang: descriptor.script?.lang || descriptor.scriptSetup?.lang || 'js'
-      }
     }
   }
 }

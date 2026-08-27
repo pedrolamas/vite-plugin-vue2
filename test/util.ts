@@ -25,7 +25,8 @@ export async function preTest() {
 async function build() {
   console.log('building...')
   const buildOutput = await execa(binPath, ['build'], {
-    cwd: tempDir
+    cwd: tempDir,
+    env: { VITE_CONFIG_NATIVE_IGNORE_WARNING: 'true' }
   })
   expect(buildOutput.stderr).toBe('')
   console.log('build complete. running build tests...')
@@ -40,7 +41,8 @@ export async function postTest() {
 export async function startServer(isBuild: boolean) {
   // start dev server
   devServer = execa(binPath, [], {
-    cwd: isBuild ? path.join(tempDir, '/dist') : tempDir
+    cwd: isBuild ? path.join(tempDir, '/dist') : tempDir,
+    env: { VITE_CONFIG_NATIVE_IGNORE_WARNING: 'true' }
   })
   // Suppress the expected rejection when we later kill the server (execa v9)
   devServer.catch(() => {})
