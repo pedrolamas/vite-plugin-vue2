@@ -1,5 +1,5 @@
 import fs from 'node:fs'
-import { createFilter } from 'vite'
+import { createFilter, mergeAlias } from 'vite'
 import type { Plugin, ViteDevServer } from 'vite'
 import { exactRegex, makeIdFiltersToMatchWithQuery } from '@rolldown/pluginutils'
 import type {
@@ -72,9 +72,10 @@ export default function vuePlugin(rawOptions: Options = {}): Plugin {
 
   const filter = createFilter(include, exclude)
 
-  const idFilter = [exactRegex(NORMALIZER_ID), exactRegex(HMR_RUNTIME_ID), /[?&]vue\b/]
+  const vueQueryFilter = /[?&]vue\b/
+  const idFilter = [exactRegex(NORMALIZER_ID), exactRegex(HMR_RUNTIME_ID), vueQueryFilter]
   const transformIdFilter = {
-    include: [...makeIdFiltersToMatchWithQuery(toArray(include)), /[?&]vue\b/],
+    include: [...makeIdFiltersToMatchWithQuery(toArray(include)), vueQueryFilter],
     exclude: exclude ? makeIdFiltersToMatchWithQuery(toArray(exclude)) : undefined
   }
 
@@ -103,16 +104,12 @@ export default function vuePlugin(rawOptions: Options = {}): Plugin {
     },
 
     config(config) {
-      const alias = config.resolve?.alias
-      const hasVueAlias = Array.isArray(alias)
-        ? alias.some(({ find }) => find === 'vue')
-        : !!alias && 'vue' in alias
-      if (hasVueAlias) {
-        return
-      }
       return {
         resolve: {
-          alias: [{ find: 'vue', replacement: 'vue/dist/vue.runtime.esm.js' }]
+          alias: mergeAlias(
+            [{ find: 'vue', replacement: 'vue/dist/vue.runtime.esm.js' }],
+            config.resolve?.alias
+          )
         }
       }
     },

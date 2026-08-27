@@ -63,6 +63,9 @@ export async function transformStyle(
   return {
     code: result.code,
     map: map,
+    // upstream @vitejs/plugin-vue also excludes temp descriptors here (cssScopeTo
+    // would point at the wrong module); not needed here since getSrcDescriptor
+    // has no temp-descriptor fallback, it always resolves the real owning file
     meta: block.scoped
       ? { vite: { cssScopeTo: [descriptor.filename, 'default'] as const } }
       : undefined
