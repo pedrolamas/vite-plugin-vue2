@@ -59,7 +59,7 @@ This is the core thing to understand. A `.vue` file is compiled in two passes:
 - **Virtual modules** use `\0plugin-vue2:` prefixes (`\0plugin-vue2:normalizer`, `\0plugin-vue2:hmr-runtime`) and are returned as-is from `resolveId`.
 - **HMR is self-contained.** `__VUE_HMR_RUNTIME__` here is a *virtual module default export*, not Vue's global. `main.ts` emits an `import.meta.hot.accept` that picks rerender vs. full reload via an exported `_rerender_only` flag.
 - **Hook filters:** `resolveId`/`load`/`transform` use object form with `filter.id` (via `@rolldown/pluginutils`). These are a coarse pre-pass over *raw ids* — the in-handler guards (`createFilter`, `query.raw`, `!filter(filename) && !query.vue`) still operate on parsed filenames and must be kept.
-- Scoped styles emit `meta.vite.cssScopeTo: [descriptor.filename, 'default']` so Vite can treeshake unused SFC CSS. `'default'` is correct because `transformMain` emits `export default __component__.exports`.
+- Scoped styles emit `meta.vite.cssScopeTo: [descriptor.filename, 'default']` so Vite can treeshake unused SFC CSS. `'default'` is correct because `transformMain` emits `export default __component__.exports`. Upstream also guards this with `&& !descriptor.isTemp`; that's omitted here because `getSrcDescriptor` (`src/utils/descriptorCache.ts`) has no temp-descriptor fallback and always resolves the real owning file — if that ever changes, `cssScopeTo` needs the same guard added back.
 
 ### Vite API surface / compat notes
 
@@ -67,7 +67,7 @@ Deliberately uses only public `vite` exports — **no deep imports** (`vite/dist
 
 HMR still uses the **legacy** `handleHotUpdate` + `ModuleNode` compat layer (matching `mainModule.importers`, matching module `url` by regex) rather than the newer `hotUpdate` + `EnvironmentModuleNode` environment API. Same for `load`/`transform` reading `opt.ssr` instead of `this.environment`. This is intentional — upstream `@vitejs/plugin-vue` hasn't migrated either — but it's the first thing that will need attention if Vite 9 drops the compat `ModuleGraph`.
 
-The `vue` → `vue/dist/vue.runtime.esm.js` alias must live in the **`config()`** hook. It was previously pushed onto `config.resolve.alias` in `configResolved`, which is a silent no-op: Vite snapshots alias entries during `resolvePlugins`, before `configResolved` runs.
+The `vue` → `vue/dist/vue.runtime.esm.js` alias must live in the **`config()`** hook. It was previously pushed onto `config.resolve.alias` in `configResolved`, which is a silent no-op: Vite snapshots alias entries during `resolvePlugins`, before `configResolved` runs. It's built with Vite's own exported `mergeAlias(ours, config.resolve?.alias)` — reuse this for any alias-injecting plugin code rather than hand-rolling array/object detection; `mergeAlias`'s array form puts its *second* argument first, so passing the incoming config as the second arg is what makes a user-supplied `vue` alias win.
 
 SSR is a `// TODO` stub — `transformMain` has an `if (ssr)` block that does nothing.
 
