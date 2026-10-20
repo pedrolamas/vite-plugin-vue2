@@ -65,6 +65,8 @@ This is the core thing to understand. A `.vue` file is compiled in two passes:
 
 Deliberately uses only public `vite` exports — **no deep imports** (`vite/dist/...`), no `_`-prefixed fields. Keep it that way.
 
+The SFC compiler is resolved in `configResolved` (ported from upstream plugin-vue #475) so it's available as soon as config resolves; `buildStart` keeps a fallback, matching upstream.
+
 HMR still uses the **legacy** `handleHotUpdate` + `ModuleNode` compat layer (matching `mainModule.importers`, matching module `url` by regex) rather than the newer `hotUpdate` + `EnvironmentModuleNode` environment API. Same for `load`/`transform` reading `opt.ssr` instead of `this.environment`. This is intentional — upstream `@vitejs/plugin-vue` hasn't migrated either — but it's the first thing that will need attention if Vite 9 drops the compat `ModuleGraph`.
 
 The `vue` → `vue/dist/vue.runtime.esm.js` alias must live in the **`config()`** hook. It was previously pushed onto `config.resolve.alias` in `configResolved`, which is a silent no-op: Vite snapshots alias entries during `resolvePlugins`, before `configResolved` runs. It's built with Vite's own exported `mergeAlias(ours, config.resolve?.alias)` — reuse this for any alias-injecting plugin code rather than hand-rolling array/object detection; `mergeAlias`'s array form puts its *second* argument first, so passing the incoming config as the second arg is what makes a user-supplied `vue` alias win.
@@ -80,7 +82,7 @@ Gotchas:
 - Tests assert `buildOutput.stderr === ''`, so **any new Vite warning breaks the suite**. Vite 8.2 added a native-config-loader warning; `test/util.ts` sets `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` on spawned processes to suppress it.
 - The dev server URL is hardcoded to `http://localhost:5173`.
 - `playground/vite.config.ts` imports the plugin from `../src/index` (source, not `dist`), so tests exercise your edits without rebuilding.
-- **`test/vitest.config.ts` is orphaned.** There is no root vitest config, so its `testTimeout: 100000` never applies and the e2e suite runs on the 5s default. It passes today but is flake-prone.
+- The root `vitest.config.mts` sets `testTimeout: 100000` for the e2e suite. Keep the `.mts` extension: a `.ts` config triggers Vite's native-config-loader warning on stderr.
 
 ## Build
 

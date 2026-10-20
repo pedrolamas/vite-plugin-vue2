@@ -81,7 +81,7 @@ export default function vuePlugin(rawOptions: Options = {}): Plugin {
 
   let options: ResolvedOptions = {
     isProduction: process.env.NODE_ENV === 'production',
-    compiler: null as any, // to be set in buildStart
+    compiler: null as any, // to be set in configResolved
     ...rawOptions,
     include,
     exclude,
@@ -115,8 +115,10 @@ export default function vuePlugin(rawOptions: Options = {}): Plugin {
     },
 
     configResolved(config) {
+      const { compiler, ...rest } = options
       options = {
-        ...options,
+        compiler: compiler ?? resolveCompiler(config.root),
+        ...rest,
         root: config.root,
         isProduction: config.isProduction,
         sourceMap: config.command === 'build' ? !!config.build.sourcemap : true,
