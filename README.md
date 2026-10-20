@@ -1,10 +1,5 @@
 # @pedrolamas/plugin-vue2 [![npm](https://img.shields.io/npm/v/@pedrolamas/plugin-vue2.svg)](https://npmjs.com/package/@pedrolamas/plugin-vue2)
 
-> [!CAUTION]
-> Vue 2 has reached EOL, and this project is no longer actively maintained.
-
----
-
 > Note: this plugin requires Vite 8 (`vite >= 8.0.0`) and only works with Vue@^2.7.0.
 
 ```js
