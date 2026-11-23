@@ -71,6 +71,8 @@ HMR still uses the **legacy** `handleHotUpdate` + `ModuleNode` compat layer (mat
 
 The `vue` → `vue/dist/vue.runtime.esm.js` alias must live in the **`config()`** hook. It was previously pushed onto `config.resolve.alias` in `configResolved`, which is a silent no-op: Vite snapshots alias entries during `resolvePlugins`, before `configResolved` runs. It's built with Vite's own exported `mergeAlias(ours, config.resolve?.alias)` — reuse this for any alias-injecting plugin code rather than hand-rolling array/object detection; `mergeAlias`'s array form puts its *second* argument first, so passing the incoming config as the second arg is what makes a user-supplied `vue` alias win.
 
+Vite 8.4 deprecates `css.devSourcemap` in favor of `dev.sourcemap.css`. `src/index.ts` still reads `config.css?.devSourcemap`, matching upstream; switch when 8.4 is stable or upstream does.
+
 SSR is a `// TODO` stub — `transformMain` has an `if (ssr)` block that does nothing.
 
 ## Testing
