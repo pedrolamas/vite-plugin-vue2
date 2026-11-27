@@ -122,7 +122,8 @@ export default function vuePlugin(rawOptions: Options = {}): Plugin {
         root: config.root,
         isProduction: config.isProduction,
         sourceMap: config.command === 'build' ? !!config.build.sourcemap : true,
-        cssDevSourcemap: config.css?.devSourcemap ?? false,
+        cssDevSourcemap:
+          config.dev.sourcemap?.css ?? config.css?.devSourcemap ?? false,
         devToolsEnabled: !config.isProduction
       }
     },
